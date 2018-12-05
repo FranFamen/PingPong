@@ -20,7 +20,8 @@ public class PongGame extends ApplicationAdapter {
 	BitmapFont font;
 	Texture gameOverTexture;
 	static boolean isGameOver;
-	CloseBtn closeBtn;
+	Button closeBtn, replayBtn;
+	String closeBtnName = "close_btn.png", replayBtnName = "replay_btn.png";
 
 	@Override
 	public void create () {
@@ -36,6 +37,9 @@ public class PongGame extends ApplicationAdapter {
 
 	@Override
 	public void render () {
+	    if(closeBtn != null && closeBtn.isClicked()){
+	        System.exit(0);
+        }
 		paddle.move();
 		ball.ballStartFrameCounter++;
 		ball.move(paddle);
@@ -47,7 +51,10 @@ public class PongGame extends ApplicationAdapter {
             gameOverTexture = new Texture("game_over_logo.jpg");
             if(livesCount == 0){
             	isGameOver = true;
-				closeBtn = new CloseBtn();
+				closeBtn = new Button(closeBtnName);
+				replayBtn = new Button(replayBtnName);
+				closeBtn.setX(Gdx.graphics.getWidth() - closeBtn.texture.getWidth());
+				replayBtn.setX(Gdx.graphics.getWidth() - closeBtn.texture.getWidth());
 			}
         }
 		draw();
@@ -62,7 +69,8 @@ public class PongGame extends ApplicationAdapter {
 		if(livesCount == 0) {
             Storage.batch.draw(gameOverTexture, (Gdx.graphics.getWidth() - gameOverTexture.getWidth()) / 2,
                     (Gdx.graphics.getHeight() - gameOverTexture.getHeight()) / 2);
-			closeBtn.draw();
+
+            closeBtn.draw();
         }
 		font.draw(Storage.batch, "Score: " + score + "    Lives: " + livesCount, 0, Gdx.graphics.getHeight());
 		Storage.batch.end();
