@@ -30,6 +30,8 @@ public class Paddle {
             }
         }
     }
+
+
     public void dispose(){
         texture.dispose();
     }

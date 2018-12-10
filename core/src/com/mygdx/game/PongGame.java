@@ -12,16 +12,17 @@ import java.util.Random;
 
 public class PongGame extends ApplicationAdapter {
 	Ball ball;
-	final int CATCH_BALL_BONUS = 100;
+	final int CATCH_BALL_BONUS = 100, INITIAL_AMOUNT_OF_LIVES = 3;
 	SoundManager soundManager;
 	Paddle paddle;
 	int score = 0;
-	int livesCount = 1;
+	int livesCount = INITIAL_AMOUNT_OF_LIVES;
 	BitmapFont font;
-	Texture gameOverTexture;
+	Texture gameOverTexture, backgroundTexture;
 	static boolean isGameOver;
 	Button closeBtn, replayBtn;
 	String closeBtnName = "close_btn.png", replayBtnName = "replay_btn.png";
+
 
 	@Override
 	public void create () {
@@ -32,13 +33,16 @@ public class PongGame extends ApplicationAdapter {
 		paddle = new Paddle();
 		ball = new Ball();
 		ball.restart(paddle);
-
+		backgroundTexture = new Texture("sky_jpeg.jpg");
 	}
 
 	@Override
 	public void render () {
 	    if(closeBtn != null && closeBtn.isClicked()){
 	        System.exit(0);
+        }
+        if(replayBtn != null && replayBtn.isClicked()){
+            restartGame();
         }
 		paddle.move();
 		ball.ballStartFrameCounter++;
@@ -48,29 +52,43 @@ public class PongGame extends ApplicationAdapter {
 			ball.restart(paddle);
 			soundManager.playLoseLifeSound();
 			livesCount--;
-            gameOverTexture = new Texture("game_over_logo.jpg");
             if(livesCount == 0){
-            	isGameOver = true;
-				closeBtn = new Button(closeBtnName);
+                isGameOver = true;
+                gameOverTexture = new Texture("game_over_logo.jpg");
+                closeBtn = new Button(closeBtnName);
 				replayBtn = new Button(replayBtnName);
 				closeBtn.setX(Gdx.graphics.getWidth() - closeBtn.texture.getWidth());
-				replayBtn.setX(Gdx.graphics.getWidth() - closeBtn.texture.getWidth());
 			}
         }
 		draw();
 	}
 
-	private void draw() {
+    private void restartGame() {
+        ball.ballStartFrameCounter = 0;
+        isGameOver = false;
+        livesCount = INITIAL_AMOUNT_OF_LIVES;
+        score = 0;
+        ball = new Ball();
+        ball.restart(paddle);
+        paddle = new Paddle();
+        gameOverTexture.dispose();
+        gameOverTexture = null;
+        closeBtn.dispose();
+        replayBtn.dispose();
+    }
+
+    private void draw() {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		Storage.batch.begin();
+		Storage.batch.draw(backgroundTexture, 0,0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		ball.draw();
 		paddle.draw();
-		if(livesCount == 0) {
+		if(isGameOver) {
             Storage.batch.draw(gameOverTexture, (Gdx.graphics.getWidth() - gameOverTexture.getWidth()) / 2,
                     (Gdx.graphics.getHeight() - gameOverTexture.getHeight()) / 2);
-
             closeBtn.draw();
+            replayBtn.draw();
         }
 		font.draw(Storage.batch, "Score: " + score + "    Lives: " + livesCount, 0, Gdx.graphics.getHeight());
 		Storage.batch.end();
@@ -114,8 +132,11 @@ public class PongGame extends ApplicationAdapter {
         }
         if(closeBtn != null){
 			closeBtn.dispose();
+			replayBtn.dispose();
+
 		}
 		font.dispose();
+		backgroundTexture.dispose();
 	}
 
 }

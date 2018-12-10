@@ -1,11 +1,13 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
 public class Ball {
-    private int x, y, velocityX = 9, velocityY = 9;
+    final int INITIAL_VELOCITY = 9;
+    private int x, y, velocityX = INITIAL_VELOCITY, velocityY = INITIAL_VELOCITY;
     private Texture texture;
-    int ballStartFrameCounter, ballFlyFrameCounter;
+    public int ballStartFrameCounter, ballFlyFrameCounter;
     final int FRAMES_TO_WAIT_BEFORE_BALL_START = 60, FRAMES_TO_WAIT_BEFORE_SPEEDING_UP_BALL = 100;
 
     public Ball() {
@@ -19,6 +21,8 @@ public class Ball {
           setY(paddle.y + paddle.texture.getHeight());
           setX(paddle.x + paddle.texture.getWidth() / 2 -   getWidth() / 2);
           ballStartFrameCounter = 0;
+          velocityY = INITIAL_VELOCITY;
+          velocityX = INITIAL_VELOCITY;
     }
 
     public void move(Paddle paddle) {
@@ -48,6 +52,7 @@ public class Ball {
             ballFlyFrameCounter = 0;
         }
     }
+
 
     public int getX() {
         return x;
