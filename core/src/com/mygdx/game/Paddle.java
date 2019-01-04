@@ -13,8 +13,8 @@ public class Paddle {
     public void draw(){
 
     }
-    public void move() {
-
+    public void move(Ball ball) {
+        return;
     }
 
 

@@ -9,9 +9,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class PongGame extends ApplicationAdapter {
 	Ball ball;
-	final int CATCH_BALL_BONUS = 100, INITIAL_AMOUNT_OF_LIVES = 3, PIXELSFORTEXT = 100;
+	final int CATCH_BALL_BONUS = 100, INITIAL_AMOUNT_OF_LIVES = 3;
+	static final int PIXELSFORTEXT = 100;
 	SoundManager soundManager;
 	BottomPaddle bottomPaddle;
+	TopPaddle topPaddle;
 	int score = 0;
 	int livesCount = INITIAL_AMOUNT_OF_LIVES;
 	BitmapFont font;
@@ -28,6 +30,7 @@ public class PongGame extends ApplicationAdapter {
 		font = new BitmapFont();
 		font.getData().setScale(5);
 		bottomPaddle = new BottomPaddle();
+		topPaddle = new TopPaddle();
 		ball = new Ball();
 		ball.restart(bottomPaddle);
 		backgroundTexture = new Texture("sky_jpeg.jpg");
@@ -41,7 +44,8 @@ public class PongGame extends ApplicationAdapter {
         if(isGameOver && replayBtn.isReleased()){
             restartGame();
         }
-		bottomPaddle.move();
+		bottomPaddle.move(ball);
+		topPaddle.move(ball);
 		ball.ballStartFrameCounter++;
 		ball.move(bottomPaddle);
 		colidingBall();
@@ -84,6 +88,7 @@ public class PongGame extends ApplicationAdapter {
 		Storage.batch.draw(backgroundTexture, 0,0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight() - PIXELSFORTEXT);
 		ball.draw();
 		bottomPaddle.draw();
+		topPaddle.draw();
 		if(isGameOver) {
             Storage.batch.draw(gameOverTexture, (Gdx.graphics.getWidth() - gameOverTexture.getWidth()) / 2,
                     (Gdx.graphics.getHeight() - gameOverTexture.getHeight()) / 2);
@@ -109,6 +114,13 @@ public class PongGame extends ApplicationAdapter {
 		if(ball.getX() <= 0){
 			ball.setVelocityX(-ball.getVelocityX());
 			soundManager.playRandomBounceSound();
+		}
+		//Ball colides with a topPaddle
+		if(ball.getX() + ball.getWidth() / 2 > topPaddle.x && ball.getX() + ball.getWidth() / 2 < topPaddle.x + topPaddle.texture.getWidth()){
+			if(ball.getY() + ball.getHeight() < topPaddle.getY()){
+				ball.setVelocityY(-ball.getVelocityY());
+				soundManager.playRandomBounceSound();
+			}
 		}
 		//Ball colides with a bottomPaddle
 		if(ball.getX() + ball.getWidth() / 2 > bottomPaddle.x && ball.getX() + ball.getWidth() / 2 < bottomPaddle.x + bottomPaddle.texture.getWidth()){
