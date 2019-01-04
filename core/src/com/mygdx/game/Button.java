@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 public class Button {
     Texture texture;
     int x, y;
+    boolean wasTouched;
 
     public Button(String textureName) {
         texture = new Texture(textureName);
@@ -23,6 +24,16 @@ public class Button {
 
             return (touchY > y && touchY < y + texture.getHeight() &&
                     Gdx.input.getX() > x && Gdx.input.getX() < x + texture.getWidth());
+        }
+        return false;
+    }
+    public boolean isReleased(){
+        if(!wasTouched && Gdx.input.isTouched()){
+            wasTouched = true;
+        }
+        if(wasTouched && !Gdx.input.isTouched()){
+            wasTouched = false;
+            return true;
         }
         return false;
     }

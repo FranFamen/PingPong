@@ -2,19 +2,16 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import java.util.Random;
-
 public class PongGame extends ApplicationAdapter {
 	Ball ball;
-	final int CATCH_BALL_BONUS = 100, INITIAL_AMOUNT_OF_LIVES = 3;
+	final int CATCH_BALL_BONUS = 100, INITIAL_AMOUNT_OF_LIVES = 3, PIXELSFORTEXT = 100;
 	SoundManager soundManager;
-	Paddle paddle;
+	BottomPaddle bottomPaddle;
 	int score = 0;
 	int livesCount = INITIAL_AMOUNT_OF_LIVES;
 	BitmapFont font;
@@ -30,26 +27,26 @@ public class PongGame extends ApplicationAdapter {
 		soundManager = new SoundManager();
 		font = new BitmapFont();
 		font.getData().setScale(5);
-		paddle = new Paddle();
+		bottomPaddle = new BottomPaddle();
 		ball = new Ball();
-		ball.restart(paddle);
+		ball.restart(bottomPaddle);
 		backgroundTexture = new Texture("sky_jpeg.jpg");
 	}
 
 	@Override
 	public void render () {
-	    if(closeBtn != null && closeBtn.isClicked()){
+		if(isGameOver && closeBtn.isClicked()){
 	        System.exit(0);
         }
-        if(replayBtn != null && replayBtn.isClicked()){
+        if(isGameOver && replayBtn.isReleased()){
             restartGame();
         }
-		paddle.move();
+		bottomPaddle.move();
 		ball.ballStartFrameCounter++;
-		ball.move(paddle);
+		ball.move(bottomPaddle);
 		colidingBall();
 		if(ball.getY() + ball.getHeight() < 0){
-			ball.restart(paddle);
+			ball.restart(bottomPaddle);
 			soundManager.playLoseLifeSound();
 			livesCount--;
             if(livesCount == 0){
@@ -69,21 +66,24 @@ public class PongGame extends ApplicationAdapter {
         livesCount = INITIAL_AMOUNT_OF_LIVES;
         score = 0;
         ball = new Ball();
-        ball.restart(paddle);
-        paddle = new Paddle();
-        gameOverTexture.dispose();
-        gameOverTexture = null;
+        ball.restart(bottomPaddle);
+        bottomPaddle = new BottomPaddle();
+        if(gameOverTexture != null){
+			gameOverTexture.dispose();
+			gameOverTexture = null;
+		}
+
         closeBtn.dispose();
         replayBtn.dispose();
     }
 
     private void draw() {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		Storage.batch.begin();
-		Storage.batch.draw(backgroundTexture, 0,0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		Storage.batch.draw(backgroundTexture, 0,0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight() - PIXELSFORTEXT);
 		ball.draw();
-		paddle.draw();
+		bottomPaddle.draw();
 		if(isGameOver) {
             Storage.batch.draw(gameOverTexture, (Gdx.graphics.getWidth() - gameOverTexture.getWidth()) / 2,
                     (Gdx.graphics.getHeight() - gameOverTexture.getHeight()) / 2);
@@ -101,7 +101,7 @@ public class PongGame extends ApplicationAdapter {
             soundManager.playRandomBounceSound();
         }
 		//Ball colides with a top wall
-		if(ball.getY() + ball.getHeight() >= Gdx.graphics.getHeight()){
+		if(ball.getY() + ball.getHeight() >= Gdx.graphics.getHeight() - PIXELSFORTEXT){
 			ball.setVelocityY(-ball.getVelocityY());
 			soundManager.playRandomBounceSound();
 		}
@@ -110,12 +110,32 @@ public class PongGame extends ApplicationAdapter {
 			ball.setVelocityX(-ball.getVelocityX());
 			soundManager.playRandomBounceSound();
 		}
-		//Ball colides with a paddle
-		if(ball.getX() + ball.getWidth() / 2 > paddle.x && ball.getX() + ball.getWidth() / 2 < paddle.x + paddle.texture.getWidth()){
-			if(ball.getY() < paddle.y + paddle.texture.getHeight()){
+		//Ball colides with a bottomPaddle
+		if(ball.getX() + ball.getWidth() / 2 > bottomPaddle.x && ball.getX() + ball.getWidth() / 2 < bottomPaddle.x + bottomPaddle.texture.getWidth()){
+			if(ball.getY() < bottomPaddle.y + bottomPaddle.texture.getHeight()){
+
 				ball.setVelocityY(-ball.getVelocityY());
 				soundManager.playRandomBounceSound();
 				score += CATCH_BALL_BONUS * Math.abs(ball.getVelocityX());
+			}
+		}
+		//мяч отскакивает от левого края битки
+		if(ball.getX() > bottomPaddle.getX() - ball.getWidth() && ball.getX() < bottomPaddle.getX() - ball.getWidth() / 2 + 1){
+			if(ball.getY() < bottomPaddle.y + bottomPaddle.texture.getHeight()){
+				if(ball.getVelocityX() > 0) {
+					ball.setVelocityX(-ball.getVelocityX());
+					soundManager.playRandomBounceSound();
+				}
+			}
+		}
+		//мяч отскакивает от правого края битки
+		if(ball.getX() > bottomPaddle.getX() + bottomPaddle.texture.getWidth() - ball.getWidth() / 2 - 1
+				&& ball.getX() < bottomPaddle.getX() + bottomPaddle.texture.getWidth()){
+			if(ball.getY() < bottomPaddle.y + bottomPaddle.texture.getHeight()){
+				if(ball.getVelocityX() < 0) {
+					ball.setVelocityX(-ball.getVelocityX());
+					soundManager.playRandomBounceSound();
+				}
 			}
 		}
 	}
@@ -124,7 +144,7 @@ public class PongGame extends ApplicationAdapter {
 	@Override
 	public void dispose () {
 		Storage.batch.dispose();
-		paddle.dispose();
+		bottomPaddle.dispose();
 		ball.free();
 		soundManager.dispose();
 		if(gameOverTexture != null) {

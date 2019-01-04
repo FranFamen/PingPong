@@ -1,10 +1,9 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
 public class Ball {
-    final int INITIAL_VELOCITY = 9;
+    final int INITIAL_VELOCITY = 20;
     private int x, y, velocityX = INITIAL_VELOCITY, velocityY = INITIAL_VELOCITY;
     private Texture texture;
     public int ballStartFrameCounter, ballFlyFrameCounter;
@@ -17,15 +16,15 @@ public class Ball {
     public void draw(){
         Storage.batch.draw(texture, x, y);
     }
-    public void restart(Paddle paddle) {
-          setY(paddle.y + paddle.texture.getHeight());
-          setX(paddle.x + paddle.texture.getWidth() / 2 -   getWidth() / 2);
+    public void restart(BottomPaddle bottomPaddle) {
+          setY(bottomPaddle.y + bottomPaddle.texture.getHeight());
+          setX(bottomPaddle.x + bottomPaddle.texture.getWidth() / 2 -   getWidth() / 2);
           ballStartFrameCounter = 0;
           velocityY = INITIAL_VELOCITY;
           velocityX = INITIAL_VELOCITY;
     }
 
-    public void move(Paddle paddle) {
+    public void move(BottomPaddle bottomPaddle) {
         if(PongGame.isGameOver) {return;}
         if(ballStartFrameCounter > FRAMES_TO_WAIT_BEFORE_BALL_START) {
             setX(  getX() +   getVelocityX());
@@ -34,8 +33,8 @@ public class Ball {
             speedUpIfNeeded();
         }
         else{
-              setX(paddle.x + paddle.texture.getWidth() / 2 -   getWidth() / 2);
-              setY(paddle.y + paddle.texture.getHeight());
+              setX(bottomPaddle.x + bottomPaddle.texture.getWidth() / 2 -   getWidth() / 2);
+              setY(bottomPaddle.y + bottomPaddle.texture.getHeight());
         }
 
     }
