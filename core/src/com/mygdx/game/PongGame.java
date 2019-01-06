@@ -157,6 +157,7 @@ public class PongGame extends ApplicationAdapter {
 	public void dispose () {
 		Storage.batch.dispose();
 		bottomPaddle.dispose();
+		topPaddle.dispose();
 		ball.free();
 		soundManager.dispose();
 		if(gameOverTexture != null) {
